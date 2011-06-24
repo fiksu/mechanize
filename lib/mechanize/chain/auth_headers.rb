@@ -45,7 +45,9 @@ class Mechanize
         @@nonce_count[params['nonce']] += 1
 
         a_1 = "#{@user}:#{params['realm']}:#{@password}"
-        a_2 = "#{request.method}:#{uri.path}"
+        # PATCH: bug in digest auth (1 line)
+        #   a_2 = "#{request.method}:#{uri.path}"
+        a_2 = "#{request.method}:#{uri.request_uri}"
         request_digest = ''
         request_digest << Digest::MD5.hexdigest(a_1)
         request_digest << ':' << params['nonce']
@@ -61,7 +63,9 @@ class Mechanize
         else
           header << "qop=#{params['qop']}, "
         end
-        header << "uri=\"#{uri.path}\", "
+        # PATCH: bug in digest auth (1 line)
+        #   header << "uri=\"#{uri.path}\", "
+        header << "uri=\"#{uri.request_uri}\", "
         header << %w{ algorithm opaque nonce realm }.map { |field|
           next unless params[field]
           "#{field}=\"#{params[field]}\""
